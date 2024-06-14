@@ -39,6 +39,7 @@ dependencies:
   google_fonts: 6.2.1
   http: 1.2.1
   shared_preferences: 2.2.3
+  win32: ^5.0.3
 
 dev_dependencies:
   flutter_test:

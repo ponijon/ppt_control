@@ -1,6 +1,7 @@
 #include "flutter_window.h"
 
 #include <optional>
+#include "ppt_control.cpp"
 
 #include "flutter/generated_plugin_registrant.h"
 
@@ -25,6 +26,8 @@ bool FlutterWindow::OnCreate() {
     return false;
   }
   RegisterPlugins(flutter_controller_->engine());
+  flutter::FlutterEngine *newEngine = flutter_controller_->engine();
+  ppt_control::createChannelOpenApp channel = ppt_control::createChannelOpenApp(newEngine);
   SetChildContent(flutter_controller_->view()->GetNativeWindow());
 
   flutter_controller_->engine()->SetNextFrameCallback([&]() {

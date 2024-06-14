@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:ppt_control/ppt_control.dart';
+import 'package:flutter/services.dart';
 
 class ControlPage extends StatelessWidget {
   final String title;
@@ -11,6 +11,26 @@ class ControlPage extends StatelessWidget {
     this.data, // Make eventId nullable
   }) : super(key: key);
 
+  static const platform = MethodChannel('open_app_channel');
+  static int _slideCount = 0;
+
+
+  Future<void> _getSlideCount() async {
+    try {
+      final int result = await platform.invokeMethod('getSlideCount');
+      // setState(() {
+      //   _slideCount = result;
+      //   // _statusMessage = 'Slide count retrieved successfully';
+      // });
+      _slideCount = result;
+    } on PlatformException catch (e) {
+      // setState(() {
+      //   _statusMessage = "Failed to get slide count: '${e.message}'";
+      // });
+      print(e);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -21,26 +41,36 @@ class ControlPage extends StatelessWidget {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: <Widget>[
-                Container(
-                  margin: const EdgeInsets.only(right: 8.0),
-                  child: ElevatedButton(
-                    onPressed: () {PptControl.initialize();},
-                    child: Text('Initialize PowerPoint'),
-                  ),
-                ),
+              Text('Status: '),
+              SizedBox(height: 20),
+                // Container(
+                //   margin: const EdgeInsets.only(right: 8.0),
+                //   child: ElevatedButton(
+                //     onPressed: () {PptControl.initialize();},
+                //     child: Text('Initialize PowerPoint'),
+                //   ),
+                // ),
 
               ElevatedButton(
-                onPressed: () {
-                  PptControl.nextSlide();
+                onPressed: () async {
+                  final result = await platform.invokeMethod('nextSlide');
+                  print(result);
                 },
                 child: Text('Next Slide'),
               ),
               ElevatedButton(
-                onPressed: () {
-                  PptControl.previousSlide();
+                onPressed: () async {
+                  final result = await platform.invokeMethod('previousSlide');
+                  print(result);
                 },
                 child: Text('Previous Slide'),
               ),
+              ElevatedButton(
+                onPressed: _getSlideCount,
+                child: Text('Get Slide Count'),
+              ),
+              if (_slideCount > 0)
+                Text('Slide Count: $_slideCount'),
             ],
           ),
         ),

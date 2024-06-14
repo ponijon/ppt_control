@@ -1,11 +1,3 @@
-add_executable(ppt_control_plugin
-  "ppt_control.cpp"
-  "flutter_window.cpp"
-)
-
-target_link_libraries(ppt_control_plugin PRIVATE flutter flutter_wrapper_plugin)
-
-
 # Project-level configuration.
 cmake_minimum_required(VERSION 3.14)
 project(ppt_control LANGUAGES CXX)
