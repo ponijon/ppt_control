@@ -1,80 +1,108 @@
 import 'package:flutter/material.dart';
+import 'package:web_socket_channel/io.dart';
+import 'package:web_socket_channel/web_socket_channel.dart';
+import 'package:web_socket_channel/status.dart' as status;
 import 'package:flutter/services.dart';
 
-class ControlPage extends StatelessWidget {
+class ControlPage extends StatefulWidget {
   final String title;
   final String? data;
 
   const ControlPage({
     Key? key,
     required this.title,
-    this.data, // Make eventId nullable
+    this.data, // Make data nullable
   }) : super(key: key);
 
-  static const platform = MethodChannel('open_app_channel');
-  static int _slideCount = 0;
+  @override
+  _ControlPageState createState() => _ControlPageState();
+}
 
+class _ControlPageState extends State<ControlPage> {
+  final methodChannel = MethodChannel('open_app_channel');
+  IOWebSocketChannel? channel;
+  int _slideCount = 0;
+  String _status = 'Disconnected';
 
-  Future<void> _getSlideCount() async {
-    try {
-      final int result = await platform.invokeMethod('getSlideCount');
+  @override
+  void initState() {
+    super.initState();
+    _connectWebSocket();
+  }
+
+  void _connectWebSocket() {
+    channel = IOWebSocketChannel.connect(
+      'ws://127.0.0.1:5000',
+    );
+
+    channel!.stream.listen((message) {
       // setState(() {
-      //   _slideCount = result;
-      //   // _statusMessage = 'Slide count retrieved successfully';
+      //   _status = message;
       // });
-      _slideCount = result;
-    } on PlatformException catch (e) {
-      // setState(() {
-      //   _statusMessage = "Failed to get slide count: '${e.message}'";
-      // });
-      print(e);
-    }
+
+      if (message == "nextSlide") {
+        _nextSlide(); // Invoke _nextSlide method
+      } else if (message == "previousSlide") {
+        _previousSlide(); // Invoke _previousSlide method
+      }
+    }, onError: (error) {
+      setState(() {
+        _status = 'Connection error: $error';
+      });
+    }, onDone: () {
+      setState(() {
+        _status = 'Disconnected';
+      });
+    });
+
+    setState(() {
+      _status = 'Connected';
+    });
+  }
+
+  void _nextSlide() async {
+    // channel?.sink.add('nextSlide');
+
+    final result = await methodChannel.invokeMethod('nextSlide');
+    print(result);
+  }
+
+  void _previousSlide() async {
+    // channel?.sink.add('previousSlide');
+    final result = await methodChannel.invokeMethod('previousSlide');
+    print(result);
+  }
+
+  @override
+  void dispose() {
+    channel?.sink.close(status.goingAway);
+    super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(title),
+        title: Text(widget.title),
       ),
       body: Center(
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: <Widget>[
-              Text('Status: '),
-              SizedBox(height: 20),
-                // Container(
-                //   margin: const EdgeInsets.only(right: 8.0),
-                //   child: ElevatedButton(
-                //     onPressed: () {PptControl.initialize();},
-                //     child: Text('Initialize PowerPoint'),
-                //   ),
-                // ),
-
-              ElevatedButton(
-                onPressed: () async {
-                  final result = await platform.invokeMethod('nextSlide');
-                  print(result);
-                },
-                child: Text('Next Slide'),
-              ),
-              ElevatedButton(
-                onPressed: () async {
-                  final result = await platform.invokeMethod('previousSlide');
-                  print(result);
-                },
-                child: Text('Previous Slide'),
-              ),
-              ElevatedButton(
-                onPressed: _getSlideCount,
-                child: Text('Get Slide Count'),
-              ),
-              if (_slideCount > 0)
-                Text('Slide Count: $_slideCount'),
-            ],
-          ),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: <Widget>[
+            Text('Status: $_status'),
+            SizedBox(height: 20),
+            ElevatedButton(
+              onPressed: _nextSlide,
+              child: Text('Next Slide'),
+            ),
+            SizedBox(height: 10),
+            ElevatedButton(
+              onPressed: _previousSlide,
+              child: Text('Previous Slide'),
+            ),
+          ],
         ),
-
+      ),
     );
   }
 }
