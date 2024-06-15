@@ -94,17 +94,17 @@ namespace ppt_control
           (*result)->Error("An error occurred");
         }
       }
-      else if (call.method_name().compare("getSlideCount") == 0)
-      {
-        try
-        {
-          handleGetSlideCount(call, result);
-        }
-        catch (...)
-        {
-          (*result)->Error("An error occurred");
-        }
-      }
+      // else if (call.method_name().compare("getSlideCount") == 0)
+      // {
+      //   try
+      //   {
+      //     handleGetSlideCount(call, result);
+      //   }
+      //   catch (...)
+      //   {
+      //     (*result)->Error("An error occurred");
+      //   }
+      // }
       else
       {
         (*result)->NotImplemented();
@@ -190,111 +190,111 @@ namespace ppt_control
       }
     }
 
-    void handleGetSlideCount(const flutter::MethodCall<> &call, std::unique_ptr<flutter::MethodResult<>> *resPointer)
-    {
-      // Initialize COM library
-      HRESULT hr = CoInitialize(NULL);
-      if (FAILED(hr))
-      {
-        (*resPointer)->Error("Error", "Failed to initialize COM library");
-        return;
-      }
+    // void handleGetSlideCount(const flutter::MethodCall<> &call, std::unique_ptr<flutter::MethodResult<>> *resPointer)
+    // {
+    //   // Initialize COM library
+    //   HRESULT hr = CoInitialize(NULL);
+    //   if (FAILED(hr))
+    //   {
+    //     (*resPointer)->Error("Error", "Failed to initialize COM library");
+    //     return;
+    //   }
 
-      // Get the running instance of PowerPoint
-      CComPtr<IDispatch> pPPTApp;
-      CLSID clsid;
-      CLSIDFromProgID(OLESTR("PowerPoint.Application"), &clsid);
-      hr = GetActiveObject(clsid, NULL, (IUnknown **)&pPPTApp);
-      if (FAILED(hr))
-      {
-        (*resPointer)->Error("Error", "PowerPoint is not running");
-        CoUninitialize();
-        return;
-      }
+    //   // Get the running instance of PowerPoint
+    //   CComPtr<IDispatch> pPPTApp;
+    //   CLSID clsid;
+    //   CLSIDFromProgID(OLESTR("PowerPoint.Application"), &clsid);
+    //   hr = GetActiveObject(clsid, NULL, (IUnknown **)&pPPTApp);
+    //   if (FAILED(hr))
+    //   {
+    //     (*resPointer)->Error("Error", "PowerPoint is not running");
+    //     CoUninitialize();
+    //     return;
+    //   }
 
-      // Get the Presentations collection
-      CComPtr<IDispatch> pPresentations;
-      CComVariant vtResult;
-      DISPID dispID;
-      OLECHAR *szMember = OLESTR("Presentations");
-      hr = pPPTApp->GetIDsOfNames(IID_NULL, &szMember, 1, LOCALE_USER_DEFAULT, &dispID);
-      if (FAILED(hr))
-      {
-        (*resPointer)->Error("Error", "Failed to get Presentations collection");
-        CoUninitialize();
-        return;
-      }
-      hr = pPPTApp->Invoke(dispID, IID_NULL, LOCALE_USER_DEFAULT, DISPATCH_PROPERTYGET, &DISPPARAMS{NULL, NULL, 0, 0}, &vtResult, NULL, NULL);
-      if (FAILED(hr))
-      {
-        (*resPointer)->Error("Error", "Failed to get Presentations collection");
-        CoUninitialize();
-        return;
-      }
-      pPresentations = vtResult.pdispVal;
+    //   // Get the Presentations collection
+    //   CComPtr<IDispatch> pPresentations;
+    //   CComVariant vtResult;
+    //   DISPID dispID;
+    //   OLECHAR *szMember = OLESTR("Presentations");
+    //   hr = pPPTApp->GetIDsOfNames(IID_NULL, &szMember, 1, LOCALE_USER_DEFAULT, &dispID);
+    //   if (FAILED(hr))
+    //   {
+    //     (*resPointer)->Error("Error", "Failed to get Presentations collection");
+    //     CoUninitialize();
+    //     return;
+    //   }
+    //   hr = pPPTApp->Invoke(dispID, IID_NULL, LOCALE_USER_DEFAULT, DISPATCH_PROPERTYGET, &DISPPARAMS{NULL, NULL, 0, 0}, &vtResult, NULL, NULL);
+    //   if (FAILED(hr))
+    //   {
+    //     (*resPointer)->Error("Error", "Failed to get Presentations collection");
+    //     CoUninitialize();
+    //     return;
+    //   }
+    //   pPresentations = vtResult.pdispVal;
 
-      // Get the active presentation
-      CComPtr<IDispatch> pActivePresentation;
-      szMember = OLESTR("ActivePresentation");
-      hr = pPPTApp->GetIDsOfNames(IID_NULL, &szMember, 1, LOCALE_USER_DEFAULT, &dispID);
-      if (FAILED(hr))
-      {
-        (*resPointer)->Error("Error", "Failed to get active presentation");
-        CoUninitialize();
-        return;
-      }
-      hr = pPPTApp->Invoke(dispID, IID_NULL, LOCALE_USER_DEFAULT, DISPATCH_PROPERTYGET, &DISPPARAMS{NULL, NULL, 0, 0}, &vtResult, NULL, NULL);
-      if (FAILED(hr))
-      {
-        (*resPointer)->Error("Error", "Failed to get active presentation");
-        CoUninitialize();
-        return;
-      }
-      pActivePresentation = vtResult.pdispVal;
+    //   // Get the active presentation
+    //   CComPtr<IDispatch> pActivePresentation;
+    //   szMember = OLESTR("ActivePresentation");
+    //   hr = pPPTApp->GetIDsOfNames(IID_NULL, &szMember, 1, LOCALE_USER_DEFAULT, &dispID);
+    //   if (FAILED(hr))
+    //   {
+    //     (*resPointer)->Error("Error", "Failed to get active presentation");
+    //     CoUninitialize();
+    //     return;
+    //   }
+    //   hr = pPPTApp->Invoke(dispID, IID_NULL, LOCALE_USER_DEFAULT, DISPATCH_PROPERTYGET, &DISPPARAMS{NULL, NULL, 0, 0}, &vtResult, NULL, NULL);
+    //   if (FAILED(hr))
+    //   {
+    //     (*resPointer)->Error("Error", "Failed to get active presentation");
+    //     CoUninitialize();
+    //     return;
+    //   }
+    //   pActivePresentation = vtResult.pdispVal;
 
-      // Get the Slides collection
-      CComPtr<IDispatch> pSlides;
-      szMember = OLESTR("Slides");
-      hr = pActivePresentation->GetIDsOfNames(IID_NULL, &szMember, 1, LOCALE_USER_DEFAULT, &dispID);
-      if (FAILED(hr))
-      {
-        (*resPointer)->Error("Error", "Failed to get Slides collection");
-        CoUninitialize();
-        return;
-      }
-      hr = pActivePresentation->Invoke(dispID, IID_NULL, LOCALE_USER_DEFAULT, DISPATCH_PROPERTYGET, &DISPPARAMS{NULL, NULL, 0, 0}, &vtResult, NULL, NULL);
-      if (FAILED(hr))
-      {
-        (*resPointer)->Error("Error", "Failed to get Slides collection");
-        CoUninitialize();
-        return;
-      }
-      pSlides = vtResult.pdispVal;
+    //   // Get the Slides collection
+    //   CComPtr<IDispatch> pSlides;
+    //   szMember = OLESTR("Slides");
+    //   hr = pActivePresentation->GetIDsOfNames(IID_NULL, &szMember, 1, LOCALE_USER_DEFAULT, &dispID);
+    //   if (FAILED(hr))
+    //   {
+    //     (*resPointer)->Error("Error", "Failed to get Slides collection");
+    //     CoUninitialize();
+    //     return;
+    //   }
+    //   hr = pActivePresentation->Invoke(dispID, IID_NULL, LOCALE_USER_DEFAULT, DISPATCH_PROPERTYGET, &DISPPARAMS{NULL, NULL, 0, 0}, &vtResult, NULL, NULL);
+    //   if (FAILED(hr))
+    //   {
+    //     (*resPointer)->Error("Error", "Failed to get Slides collection");
+    //     CoUninitialize();
+    //     return;
+    //   }
+    //   pSlides = vtResult.pdispVal;
 
-      // Get the slide count
-      szMember = OLESTR("Count");
-      hr = pSlides->GetIDsOfNames(IID_NULL, &szMember, 1, LOCALE_USER_DEFAULT, &dispID);
-      if (FAILED(hr))
-      {
-        (*resPointer)->Error("Error", "Failed to get slide count");
-        CoUninitialize();
-        return;
-      }
-      hr = pSlides->Invoke(dispID, IID_NULL, LOCALE_USER_DEFAULT, DISPATCH_PROPERTYGET, &DISPPARAMS{NULL, NULL, 0, 0}, &vtResult, NULL, NULL);
-      if (FAILED(hr))
-      {
-        (*resPointer)->Error("Error", "Failed to get slide count");
-        CoUninitialize();
-        return;
-      }
+    //   // Get the slide count
+    //   szMember = OLESTR("Count");
+    //   hr = pSlides->GetIDsOfNames(IID_NULL, &szMember, 1, LOCALE_USER_DEFAULT, &dispID);
+    //   if (FAILED(hr))
+    //   {
+    //     (*resPointer)->Error("Error", "Failed to get slide count");
+    //     CoUninitialize();
+    //     return;
+    //   }
+    //   hr = pSlides->Invoke(dispID, IID_NULL, LOCALE_USER_DEFAULT, DISPATCH_PROPERTYGET, &DISPPARAMS{NULL, NULL, 0, 0}, &vtResult, NULL, NULL);
+    //   if (FAILED(hr))
+    //   {
+    //     (*resPointer)->Error("Error", "Failed to get slide count");
+    //     CoUninitialize();
+    //     return;
+    //   }
 
-      int slideCount = vtResult.intVal;
+    //   int slideCount = vtResult.intVal;
 
-      // Clean up
-      CoUninitialize();
+    //   // Clean up
+    //   CoUninitialize();
 
-      (*resPointer)->Success(flutter::EncodableValue(slideCount));
-    }
+    //   (*resPointer)->Success(flutter::EncodableValue(slideCount));
+    // }
     // end
   };
 }
