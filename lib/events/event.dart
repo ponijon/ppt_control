@@ -117,7 +117,7 @@ class _ListViewEventsState extends State<ListViewEvents> {
                 context,
                 MaterialPageRoute(
                   builder: (context) => ControlPage(
-                      title: events[index]['title'],
+                      id: events[index]['id'],
                       data: events[index]['url'],
                       ),
                 ),

@@ -1,11 +1,13 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:ppt_control/events/event.dart';
 
-void main() {
+void main() async {
+  await dotenv.load(fileName: ".env");
   runApp(const MyApp());
 }
 
@@ -72,7 +74,7 @@ class _LoginMobileState extends State<LoginMobile> {
     });
 
     final response = await http.post(
-      Uri.parse('https://blue.ucasty.com/auth/login'),
+      Uri.parse(dotenv.env['LOGIN_URL']!),
       headers: <String, String>{
         'Content-Type': 'application/json',
       },

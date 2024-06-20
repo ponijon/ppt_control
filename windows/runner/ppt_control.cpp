@@ -94,6 +94,17 @@ namespace ppt_control
           (*result)->Error("An error occurred");
         }
       }
+      else if (call.method_name().compare("getSlideNotes") == 0)
+      {
+        try
+        {
+          handleGetSlideNotes(call, result);
+        }
+        catch (...)
+        {
+          (*result)->Error("An error occurred");
+        }
+      }
       // else if (call.method_name().compare("getSlideCount") == 0)
       // {
       //   try
@@ -188,6 +199,169 @@ namespace ppt_control
       {
         (*resPointer)->Error("Error", "PowerPoint slideshow window not found");
       }
+    }
+
+    void handleGetSlideNotes(const flutter::MethodCall<> &call, std::unique_ptr<flutter::MethodResult<>> *resPointer)
+    {
+      // Initialize COM library
+      HRESULT hr = CoInitialize(NULL);
+      if (FAILED(hr))
+      {
+        (*resPointer)->Error("Error", "Failed to initialize COM library");
+        return;
+      }
+
+      // Get the running instance of PowerPoint
+      CComPtr<IDispatch> pPPTApp;
+      CLSID clsid;
+      CLSIDFromProgID(OLESTR("PowerPoint.Application"), &clsid);
+      hr = GetActiveObject(clsid, NULL, (IUnknown **)&pPPTApp);
+      if (FAILED(hr))
+      {
+        (*resPointer)->Error("Error", "PowerPoint is not running");
+        CoUninitialize();
+        return;
+      }
+
+      // Get the active presentation
+      CComPtr<IDispatch> pActivePresentation;
+      DISPID dispID;
+      OLECHAR *szMember = OLESTR("ActivePresentation");
+      hr = pPPTApp->GetIDsOfNames(IID_NULL, &szMember, 1, LOCALE_USER_DEFAULT, &dispID);
+      if (FAILED(hr))
+      {
+        (*resPointer)->Error("Error", "Failed to get active presentation");
+        CoUninitialize();
+        return;
+      }
+      CComVariant vtResult;
+      hr = pPPTApp->Invoke(dispID, IID_NULL, LOCALE_USER_DEFAULT, DISPATCH_PROPERTYGET, &DISPPARAMS{NULL, NULL, 0, 0}, &vtResult, NULL, NULL);
+      if (FAILED(hr))
+      {
+        (*resPointer)->Error("Error", "Failed to get active presentation");
+        CoUninitialize();
+        return;
+      }
+      pActivePresentation = vtResult.pdispVal;
+
+      // Get the SlideShowWindow
+      CComPtr<IDispatch> pSlideShowWindow;
+      szMember = OLESTR("SlideShowWindow");
+      hr = pActivePresentation->GetIDsOfNames(IID_NULL, &szMember, 1, LOCALE_USER_DEFAULT, &dispID);
+      if (FAILED(hr))
+      {
+        (*resPointer)->Error("Error", "Failed to get SlideShowWindow");
+        CoUninitialize();
+        return;
+      }
+      hr = pActivePresentation->Invoke(dispID, IID_NULL, LOCALE_USER_DEFAULT, DISPATCH_PROPERTYGET, &DISPPARAMS{NULL, NULL, 0, 0}, &vtResult, NULL, NULL);
+      if (FAILED(hr))
+      {
+        (*resPointer)->Error("Error", "Failed to get SlideShowWindow");
+        CoUninitialize();
+        return;
+      }
+      pSlideShowWindow = vtResult.pdispVal;
+
+      // Get the View
+      CComPtr<IDispatch> pView;
+      szMember = OLESTR("View");
+      hr = pSlideShowWindow->GetIDsOfNames(IID_NULL, &szMember, 1, LOCALE_USER_DEFAULT, &dispID);
+      if (FAILED(hr))
+      {
+        (*resPointer)->Error("Error", "Failed to get View");
+        CoUninitialize();
+        return;
+      }
+      hr = pSlideShowWindow->Invoke(dispID, IID_NULL, LOCALE_USER_DEFAULT, DISPATCH_PROPERTYGET, &DISPPARAMS{NULL, NULL, 0, 0}, &vtResult, NULL, NULL);
+      if (FAILED(hr))
+      {
+        (*resPointer)->Error("Error", "Failed to get View");
+        CoUninitialize();
+        return;
+      }
+      pView = vtResult.pdispVal;
+
+      // Get the Slide
+      CComPtr<IDispatch> pSlide;
+      szMember = OLESTR("Slide");
+      hr = pView->GetIDsOfNames(IID_NULL, &szMember, 1, LOCALE_USER_DEFAULT, &dispID);
+      if (FAILED(hr))
+      {
+        (*resPointer)->Error("Error", "Failed to get Slide");
+        CoUninitialize();
+        return;
+      }
+      hr = pView->Invoke(dispID, IID_NULL, LOCALE_USER_DEFAULT, DISPATCH_PROPERTYGET, &DISPPARAMS{NULL, NULL, 0, 0}, &vtResult, NULL, NULL);
+      if (FAILED(hr))
+      {
+        (*resPointer)->Error("Error", "Failed to get Slide");
+        CoUninitialize();
+        return;
+      }
+      pSlide = vtResult.pdispVal;
+
+      // Get the NotesPage
+      CComPtr<IDispatch> pNotesPage;
+      szMember = OLESTR("NotesPage");
+      hr = pSlide->GetIDsOfNames(IID_NULL, &szMember, 1, LOCALE_USER_DEFAULT, &dispID);
+      if (FAILED(hr))
+      {
+        (*resPointer)->Error("Error", "Failed to get NotesPage");
+        CoUninitialize();
+        return;
+      }
+      hr = pSlide->Invoke(dispID, IID_NULL, LOCALE_USER_DEFAULT, DISPATCH_PROPERTYGET, &DISPPARAMS{NULL, NULL, 0, 0}, &vtResult, NULL, NULL);
+      if (FAILED(hr))
+      {
+        (*resPointer)->Error("Error", "Failed to get NotesPage");
+        CoUninitialize();
+        return;
+      }
+      pNotesPage = vtResult.pdispVal;
+
+      // Get the TextRange from NotesPage
+      CComPtr<IDispatch> pTextRange;
+      szMember = OLESTR("TextRange");
+      hr = pNotesPage->GetIDsOfNames(IID_NULL, &szMember, 1, LOCALE_USER_DEFAULT, &dispID);
+      if (FAILED(hr))
+      {
+        (*resPointer)->Error("Error", "Failed to get TextRange");
+        CoUninitialize();
+        return;
+      }
+      hr = pNotesPage->Invoke(dispID, IID_NULL, LOCALE_USER_DEFAULT, DISPATCH_PROPERTYGET, &DISPPARAMS{NULL, NULL, 0, 0}, &vtResult, NULL, NULL);
+      if (FAILED(hr))
+      {
+        (*resPointer)->Error("Error", "Failed to get TextRange");
+        CoUninitialize();
+        return;
+      }
+      pTextRange = vtResult.pdispVal;
+
+      // Get the Text from TextRange
+      szMember = OLESTR("Text");
+      hr = pTextRange->GetIDsOfNames(IID_NULL, &szMember, 1, LOCALE_USER_DEFAULT, &dispID);
+      if (FAILED(hr))
+      {
+        (*resPointer)->Error("Error", "Failed to get Text from TextRange");
+        CoUninitialize();
+        return;
+      }
+      hr = pTextRange->Invoke(dispID, IID_NULL, LOCALE_USER_DEFAULT, DISPATCH_PROPERTYGET, &DISPPARAMS{NULL, NULL, 0, 0}, &vtResult, NULL, NULL);
+      if (FAILED(hr))
+      {
+        (*resPointer)->Error("Error", "Failed to get Text from TextRange");
+        CoUninitialize();
+        return;
+      }
+
+      std::wstring slideNotes = vtResult.bstrVal;
+
+      // Clean up
+      CoUninitialize();
+
+      (*resPointer)->Success(flutter::EncodableValue(slideNotes));
     }
 
     // void handleGetSlideCount(const flutter::MethodCall<> &call, std::unique_ptr<flutter::MethodResult<>> *resPointer)
